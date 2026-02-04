@@ -35,6 +35,18 @@ const requireAuth = (req, res, next) => {
   }
 };
 
+const optionalAuth = (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return next();
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "devsecret");
+    req.user = decoded;
+    return next();
+  } catch (err) {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+};
+
 const requireRole = (...roles) => (req, res, next) => {
   if (!req.user?.role || !roles.includes(req.user.role)) {
     return res.status(403).json({ error: "Forbidden" });
@@ -65,6 +77,7 @@ app.use(
 
 app.use(
   "/menu",
+  optionalAuth,
   attachUserHeaders,
   createProxyMiddleware({
     target: SERVICES.menu,

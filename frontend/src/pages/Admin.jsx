@@ -1,21 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { inventoryApi, ordersApi } from "../lib/api.js";
+import { inventoryApi, menuApi, ordersApi } from "../lib/api.js";
 
 const Admin = () => {
   const [stock, setStock] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
   const [revenue, setRevenue] = useState({ total: 0, count: 0 });
   const [message, setMessage] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [menuForm, setMenuForm] = useState({
+    name: "",
+    description: "",
+    category: "",
+    basePrice: "",
+    calories: "",
+    protein: "",
+    carbs: "",
+    fat: "",
+  });
 
   const refresh = async () => {
-    const [stockData, ordersData, revenueData] = await Promise.all([
+    const [stockData, ordersData, revenueData, menuData] = await Promise.all([
       inventoryApi.list(),
       ordersApi.listAll(),
       ordersApi.revenueToday(),
+      menuApi.items(),
     ]);
     setStock(stockData);
     setOrders(ordersData);
     setRevenue(revenueData);
+    setMenuItems(menuData);
   };
 
   useEffect(() => {
@@ -31,6 +45,74 @@ const Admin = () => {
   const updateStatus = async (orderId, status) => {
     await ordersApi.updateStatus(orderId, status);
     setMessage("Order status updated.");
+    refresh();
+  };
+
+  const toggleMenuItem = async (item) => {
+    await menuApi.toggleItem(item._id);
+    setMessage("Menu availability updated.");
+    refresh();
+  };
+
+  const editMenuItem = (item) => {
+    setEditingId(item._id);
+    setMenuForm({
+      name: item.name || "",
+      description: item.description || "",
+      category: item.category || "",
+      basePrice: item.basePrice ?? "",
+      calories: item.nutrition?.calories ?? "",
+      protein: item.nutrition?.protein ?? "",
+      carbs: item.nutrition?.carbs ?? "",
+      fat: item.nutrition?.fat ?? "",
+    });
+  };
+
+  const clearMenuForm = () => {
+    setEditingId(null);
+    setMenuForm({
+      name: "",
+      description: "",
+      category: "",
+      basePrice: "",
+      calories: "",
+      protein: "",
+      carbs: "",
+      fat: "",
+    });
+  };
+
+  const saveMenuItem = async (e) => {
+    e.preventDefault();
+    const payload = {
+      name: menuForm.name.trim(),
+      description: menuForm.description.trim(),
+      category: menuForm.category.trim(),
+      basePrice: Number(menuForm.basePrice) || 0,
+      nutrition: {
+        calories: Number(menuForm.calories) || 0,
+        protein: Number(menuForm.protein) || 0,
+        carbs: Number(menuForm.carbs) || 0,
+        fat: Number(menuForm.fat) || 0,
+      },
+      isActive: true,
+    };
+    if (editingId) {
+      await menuApi.updateItem(editingId, payload);
+      setMessage("Menu item updated.");
+    } else {
+      await menuApi.createItem(payload);
+      setMessage("Menu item created.");
+    }
+    clearMenuForm();
+    refresh();
+  };
+
+  const deleteMenuItem = async (item) => {
+    const ok = window.confirm(`Delete ${item.name}?`);
+    if (!ok) return;
+    await menuApi.deleteItem(item._id);
+    setMessage("Menu item deleted.");
     refresh();
   };
 
@@ -68,6 +150,86 @@ const Admin = () => {
               </button>
             </div>
           ))}
+        </div>
+        <div className="card">
+          <h3>Menu Availability</h3>
+          {menuItems.map((m) => (
+            <div className="row" key={m._id}>
+              <span>
+                {m.name} · <span className={m.isActive ? "muted" : "chip danger"}>{m.isActive ? "Available" : "Unavailable"}</span>
+              </span>
+              <div className="row">
+                <button className="btn ghost" onClick={() => toggleMenuItem(m)}>
+                  {m.isActive ? "Disable" : "Enable"}
+                </button>
+                <button className="btn ghost" onClick={() => editMenuItem(m)}>
+                  Edit
+                </button>
+                <button className="btn ghost" onClick={() => deleteMenuItem(m)}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="card">
+          <h3>{editingId ? "Update Menu Item" : "Create Menu Item"}</h3>
+          <form className="admin-form" onSubmit={saveMenuItem}>
+            <input
+              placeholder="Name"
+              value={menuForm.name}
+              onChange={(e) => setMenuForm({ ...menuForm, name: e.target.value })}
+            />
+            <input
+              placeholder="Category"
+              value={menuForm.category}
+              onChange={(e) => setMenuForm({ ...menuForm, category: e.target.value })}
+            />
+            <input
+              placeholder="Base Price"
+              type="number"
+              value={menuForm.basePrice}
+              onChange={(e) => setMenuForm({ ...menuForm, basePrice: e.target.value })}
+            />
+            <input
+              className="full"
+              placeholder="Description"
+              value={menuForm.description}
+              onChange={(e) => setMenuForm({ ...menuForm, description: e.target.value })}
+            />
+            <input
+              placeholder="Calories"
+              type="number"
+              value={menuForm.calories}
+              onChange={(e) => setMenuForm({ ...menuForm, calories: e.target.value })}
+            />
+            <input
+              placeholder="Protein"
+              type="number"
+              value={menuForm.protein}
+              onChange={(e) => setMenuForm({ ...menuForm, protein: e.target.value })}
+            />
+            <input
+              placeholder="Carbs"
+              type="number"
+              value={menuForm.carbs}
+              onChange={(e) => setMenuForm({ ...menuForm, carbs: e.target.value })}
+            />
+            <input
+              placeholder="Fat"
+              type="number"
+              value={menuForm.fat}
+              onChange={(e) => setMenuForm({ ...menuForm, fat: e.target.value })}
+            />
+            <div className="admin-actions full">
+              <button className="btn" type="submit">
+                {editingId ? "Update" : "Create"}
+              </button>
+              <button className="btn ghost" type="button" onClick={clearMenuForm}>
+                Clear
+              </button>
+            </div>
+          </form>
         </div>
         <div className="card">
           <h3>Orders</h3>

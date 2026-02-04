@@ -29,11 +29,15 @@ export const auth = {
 };
 
 export const menuApi = {
-  items: () => api("/menu/items"),
-  combos: () => api("/menu/combos"),
+  items: () => api("/menu/items?includeInactive=true"),
+  combos: () => api("/menu/combos?includeInactive=true"),
   ingredients: () => api("/menu/ingredients"),
   chefSpecials: () => api("/menu/chef-specials"),
   priceCustom: (payload) => api("/menu/customize/price", { method: "POST", body: JSON.stringify(payload) }),
+  toggleItem: (id) => api(`/menu/items/${id}/toggle`, { method: "PATCH" }),
+  createItem: (payload) => api("/menu/items", { method: "POST", body: JSON.stringify(payload) }),
+  updateItem: (id, payload) => api(`/menu/items/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  deleteItem: (id) => api(`/menu/items/${id}`, { method: "DELETE" }),
 };
 
 export const ordersApi = {

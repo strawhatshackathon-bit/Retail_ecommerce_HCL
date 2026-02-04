@@ -57,6 +57,14 @@ const Home = () => {
     });
   };
 
+  const updateCartItemSafe = (item, type, delta) => {
+    if (delta > 0 && item.isActive === false) {
+      window.alert("This item is currently unavailable, so it cannot be added.");
+      return;
+    }
+    updateCartItem(item, type, delta);
+  };
+
   const getQty = (itemId, type) => cart.find((c) => c.id === itemId && c.type === type)?.qty || 0;
 
   const updateCustom = (ingredient, delta) => {
@@ -155,6 +163,9 @@ const Home = () => {
               <p>{item.description}</p>
               <div className="chip-row">
                 <span className="chip">{item.category || "Signature"}</span>
+                <span className={`chip ${item.isActive === false ? "danger" : ""}`}>
+                  {item.isActive === false ? "Unavailable" : "Available"}
+                </span>
                 {item.allergens?.slice(0, 2).map((a) => (
                   <span className="chip ghost" key={a}>
                     {a}
@@ -174,11 +185,15 @@ const Home = () => {
                     Customize
                   </button>
                   <div className="stepper">
-                    <button className="btn ghost" onClick={() => updateCartItem(item, "item", -1)}>
+                    <button className="btn ghost" onClick={() => updateCartItemSafe(item, "item", -1)}>
                       -
                     </button>
                     <span>{getQty(item._id, "item")}</span>
-                    <button className="btn" onClick={() => updateCartItem(item, "item", 1)}>
+                    <button
+                      className="btn"
+                      onClick={() => updateCartItemSafe(item, "item", 1)}
+                      disabled={item.isActive === false}
+                    >
                       +
                     </button>
                   </div>
@@ -203,11 +218,15 @@ const Home = () => {
               <div className="card-actions">
                 <span className="price">₹{combo.price}</span>
                 <div className="stepper">
-                  <button className="btn ghost" onClick={() => updateCartItem(combo, "combo", -1)}>
+                  <button className="btn ghost" onClick={() => updateCartItemSafe(combo, "combo", -1)}>
                     -
                   </button>
                   <span>{getQty(combo._id, "combo")}</span>
-                  <button className="btn" onClick={() => updateCartItem(combo, "combo", 1)}>
+                  <button
+                    className="btn"
+                    onClick={() => updateCartItemSafe(combo, "combo", 1)}
+                    disabled={combo.isActive === false}
+                  >
                     +
                   </button>
                 </div>
@@ -279,6 +298,26 @@ const Home = () => {
               </span>
             </div>
           ))}
+          {cart.length > 0 && (
+            <div className="chart">
+              <h4>Cart Quantity Chart</h4>
+              {(() => {
+                const maxQty = Math.max(1, ...cart.map((i) => i.qty));
+                return cart.map((c) => {
+                  const width = Math.round((c.qty / maxQty) * 100);
+                  return (
+                    <div className="chart-row" key={`chart-${c.id}`}>
+                      <span className="chart-label">{c.name}</span>
+                      <div className="chart-bar">
+                        <div className="chart-fill" style={{ width: `${width}%` }} />
+                      </div>
+                      <span className="chart-qty">{c.qty}</span>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          )}
           <div className="row total">
             <strong>Total</strong>
             <strong>₹{total}</strong>

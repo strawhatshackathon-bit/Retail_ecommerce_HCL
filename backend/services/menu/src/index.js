@@ -113,8 +113,10 @@ app.patch("/menu/ingredients/:id/availability", requireAdmin, async (req, res) =
   res.json(ingredient);
 });
 
-app.get("/menu/items", async (_req, res) => {
-  const items = await MenuItem.find({ isActive: true });
+app.get("/menu/items", async (req, res) => {
+  const includeInactive = req.query.includeInactive === "true";
+  const filter = includeInactive ? {} : { isActive: true };
+  const items = await MenuItem.find(filter);
   res.json(items);
 });
 
@@ -137,6 +139,19 @@ app.post("/menu/items", requireAdmin, async (req, res) => {
   res.status(201).json(item);
 });
 
+app.patch("/menu/items/:id", requireAdmin, async (req, res) => {
+  const update = req.body || {};
+  const item = await MenuItem.findByIdAndUpdate(req.params.id, { $set: update }, { new: true });
+  if (!item) return res.status(404).json({ error: "Not found" });
+  res.json(item);
+});
+
+app.delete("/menu/items/:id", requireAdmin, async (req, res) => {
+  const item = await MenuItem.findByIdAndDelete(req.params.id);
+  if (!item) return res.status(404).json({ error: "Not found" });
+  res.json({ ok: true });
+});
+
 app.patch("/menu/items/:id/toggle", requireAdmin, async (req, res) => {
   const item = await MenuItem.findById(req.params.id);
   if (!item) return res.status(404).json({ error: "Not found" });
@@ -145,8 +160,10 @@ app.patch("/menu/items/:id/toggle", requireAdmin, async (req, res) => {
   res.json(item);
 });
 
-app.get("/menu/combos", async (_req, res) => {
-  const combos = await Combo.find({ isActive: true });
+app.get("/menu/combos", async (req, res) => {
+  const includeInactive = req.query.includeInactive === "true";
+  const filter = includeInactive ? {} : { isActive: true };
+  const combos = await Combo.find(filter);
   res.json(combos);
 });
 
