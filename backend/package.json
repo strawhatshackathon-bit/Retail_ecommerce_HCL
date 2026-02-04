@@ -1,0 +1,14 @@
+{
+  "name": "hackathon-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n gateway,auth,menu,orders,inventory,group,notify -c green,blue,magenta,cyan,yellow,white,gray \"npm --prefix gateway run dev\" \"npm --prefix services/auth run dev\" \"npm --prefix services/menu run dev\" \"npm --prefix services/orders run dev\" \"npm --prefix services/inventory run dev\" \"npm --prefix services/group-orders run dev\" \"npm --prefix services/notifications run dev\"",
+    "seed": "node seed.js"
+  },
+  "dependencies": {
+    "concurrently": "^9.0.1",
+    "mongoose": "^8.6.2"
+  }
+}
