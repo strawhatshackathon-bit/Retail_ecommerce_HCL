@@ -240,11 +240,33 @@ nav a:hover,
 
 .builder-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 12px 0;
   border-bottom: 1px dashed var(--border);
+  gap: 16px;
 }
+
+/* Ingredient name */
+.builder-row span:first-child {
+  flex: 1;                 /* Takes full remaining space */
+}
+
+/* Price column */
+.builder-row .price {
+  width: 70px;             /* Fixed width so all ₹ align */
+  text-align: right;       /* Align numbers properly */
+  font-weight: 600;
+}
+
+/* Quantity section */
+.qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 90px;         /* Keeps buttons aligned */
+  justify-content: flex-end;
+}
+
 
 .builder-summary {
   background: rgba(255, 255, 255, 0.04);
