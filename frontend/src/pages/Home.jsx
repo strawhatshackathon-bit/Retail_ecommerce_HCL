@@ -106,7 +106,7 @@ const Home = () => {
     try {
       await ordersApi.create(payload);
       setCart([]);
-      setMessage("Order placed. Track it in My Orders.");
+      setMessage("Congrats! Your order is placed and added to the kitchen queue.");
     } catch (err) {
       setMessage(err.message);
     }
