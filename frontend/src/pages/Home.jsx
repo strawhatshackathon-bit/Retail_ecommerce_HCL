@@ -36,15 +36,28 @@ const Home = () => {
     [cart]
   );
 
-  const addToCart = (item, type = "item") => {
+  const updateCartItem = (item, type, delta) => {
     setCart((prev) => {
-      const exists = prev.find((p) => p.id === item._id && p.type === type);
-      if (exists) {
-        return prev.map((p) => (p === exists ? { ...p, qty: p.qty + 1 } : p));
+      const idx = prev.findIndex((p) => p.id === item._id && p.type === type);
+      if (idx === -1) {
+        if (delta <= 0) return prev;
+        return [
+          ...prev,
+          { id: item._id, name: item.name, price: item.basePrice || item.price, qty: delta, type },
+        ];
       }
-      return [...prev, { id: item._id, name: item.name, price: item.basePrice || item.price, qty: 1, type }];
+      const next = [...prev];
+      const nextQty = next[idx].qty + delta;
+      if (nextQty <= 0) {
+        next.splice(idx, 1);
+      } else {
+        next[idx] = { ...next[idx], qty: nextQty };
+      }
+      return next;
     });
   };
+
+  const getQty = (itemId, type) => cart.find((c) => c.id === itemId && c.type === type)?.qty || 0;
 
   const updateCustom = (ingredient, delta) => {
     setCustomAdds((prev) => {
@@ -137,7 +150,7 @@ const Home = () => {
         )}
         <div className="grid">
           {items.map((item) => (
-            <div className="card" key={item._id}>
+            <div className="card menu-card" key={item._id}>
               <h4>{item.name}</h4>
               <p>{item.description}</p>
               <div className="chip-row">
@@ -154,15 +167,21 @@ const Home = () => {
                 <span>{item.nutrition?.carbs ?? 0}g carbs</span>
                 <span>{item.nutrition?.fat ?? 0}g fat</span>
               </div>
-              <div className="row">
+              <div className="card-actions">
                 <span className="price">₹{item.basePrice}</span>
                 <div className="row">
                   <button className="btn ghost" onClick={() => startCustomize(item)}>
                     Customize
                   </button>
-                  <button className="btn" onClick={() => addToCart(item, "item")}>
-                    Add
-                  </button>
+                  <div className="stepper">
+                    <button className="btn ghost" onClick={() => updateCartItem(item, "item", -1)}>
+                      -
+                    </button>
+                    <span>{getQty(item._id, "item")}</span>
+                    <button className="btn" onClick={() => updateCartItem(item, "item", 1)}>
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -174,18 +193,24 @@ const Home = () => {
         <h2>Combos</h2>
         <div className="grid">
           {combos.map((combo) => (
-            <div className="card" key={combo._id}>
+            <div className="card menu-card" key={combo._id}>
               <h4>{combo.name}</h4>
               <p>{combo.description}</p>
               <div className="nutri">
                 <span>{combo.nutrition?.calories ?? 0} kcal</span>
                 <span>{combo.nutrition?.protein ?? 0}g protein</span>
               </div>
-              <div className="row">
+              <div className="card-actions">
                 <span className="price">₹{combo.price}</span>
-                <button className="btn" onClick={() => addToCart(combo, "combo")}>
-                  Add
-                </button>
+                <div className="stepper">
+                  <button className="btn ghost" onClick={() => updateCartItem(combo, "combo", -1)}>
+                    -
+                  </button>
+                  <span>{getQty(combo._id, "combo")}</span>
+                  <button className="btn" onClick={() => updateCartItem(combo, "combo", 1)}>
+                    +
+                  </button>
+                </div>
               </div>
             </div>
           ))}

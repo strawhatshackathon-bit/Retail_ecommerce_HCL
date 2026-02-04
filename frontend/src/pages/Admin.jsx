@@ -4,12 +4,18 @@ import { inventoryApi, ordersApi } from "../lib/api.js";
 const Admin = () => {
   const [stock, setStock] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [revenue, setRevenue] = useState({ total: 0, count: 0 });
   const [message, setMessage] = useState("");
 
   const refresh = async () => {
-    const [stockData, ordersData] = await Promise.all([inventoryApi.list(), ordersApi.listAll()]);
+    const [stockData, ordersData, revenueData] = await Promise.all([
+      inventoryApi.list(),
+      ordersApi.listAll(),
+      ordersApi.revenueToday(),
+    ]);
     setStock(stockData);
     setOrders(ordersData);
+    setRevenue(revenueData);
   };
 
   useEffect(() => {
@@ -31,6 +37,24 @@ const Admin = () => {
   return (
     <section className="page">
       <h2>Admin Control Room</h2>
+      <div className="grid">
+        <div className="card highlight">
+          <h3>Today’s Revenue</h3>
+          <p className="price">₹{revenue.total}</p>
+          <p className="muted">{revenue.count} orders processed today</p>
+        </div>
+        <div className="card">
+          <h3>Supplier Contacts</h3>
+          {stock.map((s) => (
+            <div className="row" key={`${s._id}-supplier`}>
+              <span>
+                {s.name} · {s.supplier?.name || "Not set"}
+              </span>
+              <span className="muted">{s.supplier?.phone || "-"}</span>
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="grid">
         <div className="card">
           <h3>Inventory</h3>

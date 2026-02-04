@@ -46,12 +46,13 @@ app.post("/auth/register", async (req, res) => {
   if (!name || !email || !password) {
     return res.status(400).json({ error: "Missing fields" });
   }
-  const exists = await User.findOne({ email });
+  const normalizedEmail = email.trim().toLowerCase();
+  const exists = await User.findOne({ email: normalizedEmail });
   if (exists) return res.status(409).json({ error: "Email exists" });
   const passwordHash = await bcrypt.hash(password, 10);
   const user = await User.create({
     name,
-    email,
+    email: normalizedEmail,
     passwordHash,
     role: role === "admin" ? "admin" : "user",
   });
@@ -64,7 +65,8 @@ app.post("/auth/login", async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: "Missing fields" });
   }
-  const user = await User.findOne({ email });
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) return res.status(401).json({ error: "Invalid credentials" });
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return res.status(401).json({ error: "Invalid credentials" });

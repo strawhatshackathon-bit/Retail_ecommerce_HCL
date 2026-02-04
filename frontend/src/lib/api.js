@@ -42,6 +42,7 @@ export const ordersApi = {
   get: (id) => api(`/orders/${id}`),
   reorder: (id) => api(`/orders/${id}/reorder`, { method: "POST" }),
   listAll: () => api("/orders"),
+  revenueToday: () => api("/orders/revenue/today"),
   updateStatus: (id, status) =>
     api(`/orders/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
 };

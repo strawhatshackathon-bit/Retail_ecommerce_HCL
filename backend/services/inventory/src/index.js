@@ -24,6 +24,12 @@ const stockSchema = new mongoose.Schema(
     unit: { type: String, default: "units" },
     threshold: { type: Number, default: 5 },
     isAvailable: { type: Boolean, default: true },
+    supplier: {
+      name: String,
+      phone: String,
+      email: String,
+      lastRestockAt: Date,
+    },
   },
   { timestamps: true }
 );
@@ -38,16 +44,16 @@ app.get("/inventory/ingredients", async (_req, res) => {
 });
 
 app.post("/inventory/ingredients", async (req, res) => {
-  const { ingredientId, name, stock, unit, threshold } = req.body || {};
-  const item = await Stock.create({ ingredientId, name, stock, unit, threshold });
+  const { ingredientId, name, stock, unit, threshold, supplier } = req.body || {};
+  const item = await Stock.create({ ingredientId, name, stock, unit, threshold, supplier });
   res.status(201).json(item);
 });
 
 app.patch("/inventory/ingredients/:id", async (req, res) => {
-  const { stock, threshold, isAvailable } = req.body || {};
+  const { stock, threshold, isAvailable, supplier } = req.body || {};
   const item = await Stock.findByIdAndUpdate(
     req.params.id,
-    { $set: { stock, threshold, isAvailable } },
+    { $set: { stock, threshold, isAvailable, supplier } },
     { new: true }
   );
   if (!item) return res.status(404).json({ error: "Not found" });

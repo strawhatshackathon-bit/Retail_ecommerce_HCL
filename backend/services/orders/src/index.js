@@ -75,6 +75,24 @@ app.get("/orders", async (req, res) => {
   res.json(orders);
 });
 
+app.get("/orders/revenue/today", async (req, res) => {
+  const role = req.headers["x-user-role"];
+  if (role !== "admin") return res.status(403).json({ error: "Admin only" });
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+
+  const result = await Order.aggregate([
+    { $match: { createdAt: { $gte: start, $lte: end } } },
+    { $group: { _id: null, total: { $sum: "$total" }, count: { $sum: 1 } } },
+  ]);
+
+  const total = result[0]?.total || 0;
+  const count = result[0]?.count || 0;
+  res.json({ total, count });
+});
+
 app.get("/orders/my", async (req, res) => {
   const userId = req.headers["x-user-id"];
   const orders = await Order.find({ userId }).sort({ createdAt: -1 });

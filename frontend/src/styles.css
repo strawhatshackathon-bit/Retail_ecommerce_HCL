@@ -171,6 +171,7 @@ nav a:hover,
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
+  align-items: stretch;
 }
 
 .card {
@@ -184,6 +185,10 @@ nav a:hover,
   gap: 10px;
 }
 
+.menu-card {
+  min-height: 320px;
+}
+
 .card.highlight {
   border: 1px solid rgba(242, 182, 71, 0.4);
 }
@@ -193,6 +198,15 @@ nav a:hover,
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+}
+
+.card-actions {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .chip-row {
@@ -222,6 +236,26 @@ nav a:hover,
   flex-wrap: wrap;
   font-size: 12px;
   color: var(--muted);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.stepper .btn {
+  padding: 6px 12px;
+}
+
+.stepper span {
+  min-width: 16px;
+  text-align: center;
+  font-weight: 600;
 }
 
 .price {

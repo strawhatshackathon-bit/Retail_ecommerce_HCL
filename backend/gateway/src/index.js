@@ -4,7 +4,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import { createProxyMiddleware } from "http-proxy-middleware";
+import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 
 dotenv.config();
 
@@ -59,6 +59,7 @@ app.use(
     target: SERVICES.auth,
     changeOrigin: true,
     pathRewrite: { "^/auth": "/auth" },
+    onProxyReq: fixRequestBody,
   })
 );
 
@@ -69,6 +70,7 @@ app.use(
     target: SERVICES.menu,
     changeOrigin: true,
     pathRewrite: { "^/menu": "/menu" },
+    onProxyReq: fixRequestBody,
   })
 );
 
@@ -80,6 +82,7 @@ app.use(
     target: SERVICES.orders,
     changeOrigin: true,
     pathRewrite: { "^/orders": "/orders" },
+    onProxyReq: fixRequestBody,
   })
 );
 
@@ -91,6 +94,7 @@ app.use(
     target: SERVICES.groupOrders,
     changeOrigin: true,
     pathRewrite: { "^/group-orders": "/group-orders" },
+    onProxyReq: fixRequestBody,
   })
 );
 
@@ -103,6 +107,7 @@ app.use(
     target: SERVICES.inventory,
     changeOrigin: true,
     pathRewrite: { "^/inventory": "/inventory" },
+    onProxyReq: fixRequestBody,
   })
 );
 
@@ -115,6 +120,7 @@ app.use(
     target: SERVICES.notifications,
     changeOrigin: true,
     pathRewrite: { "^/notifications": "/notifications" },
+    onProxyReq: fixRequestBody,
   })
 );
 
