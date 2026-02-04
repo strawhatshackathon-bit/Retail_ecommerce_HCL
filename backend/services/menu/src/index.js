@@ -84,6 +84,8 @@ const requireAdmin = (req, res, next) => {
   return next();
 };
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 app.get("/menu/ingredients", async (_req, res) => {
   const data = await Ingredient.find();
   res.json(data);
@@ -128,6 +130,12 @@ app.get("/menu/items/:id", async (req, res) => {
 
 app.post("/menu/items", requireAdmin, async (req, res) => {
   const { name, description, category, basePrice, ingredients, imageUrl } = req.body || {};
+  if (!name) return res.status(400).json({ error: "Name is required" });
+  const normalizedName = name.trim().toLowerCase();
+  const exists = await MenuItem.findOne({
+    name: { $regex: new RegExp(`^${escapeRegex(normalizedName)}$`, "i") },
+  });
+  if (exists) return res.status(409).json({ error: "Menu item already exists" });
   const item = await MenuItem.create({
     name,
     description,
@@ -141,6 +149,14 @@ app.post("/menu/items", requireAdmin, async (req, res) => {
 
 app.patch("/menu/items/:id", requireAdmin, async (req, res) => {
   const update = req.body || {};
+  if (update.name) {
+    const normalizedName = update.name.trim().toLowerCase();
+    const exists = await MenuItem.findOne({
+      _id: { $ne: req.params.id },
+      name: { $regex: new RegExp(`^${escapeRegex(normalizedName)}$`, "i") },
+    });
+    if (exists) return res.status(409).json({ error: "Menu item already exists" });
+  }
   const item = await MenuItem.findByIdAndUpdate(req.params.id, { $set: update }, { new: true });
   if (!item) return res.status(404).json({ error: "Not found" });
   res.json(item);

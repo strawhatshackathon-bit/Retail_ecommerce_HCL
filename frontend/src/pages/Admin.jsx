@@ -97,15 +97,19 @@ const Admin = () => {
       },
       isActive: true,
     };
-    if (editingId) {
-      await menuApi.updateItem(editingId, payload);
-      setMessage("Menu item updated.");
-    } else {
-      await menuApi.createItem(payload);
-      setMessage("Menu item created.");
+    try {
+      if (editingId) {
+        await menuApi.updateItem(editingId, payload);
+        setMessage("Menu item updated.");
+      } else {
+        await menuApi.createItem(payload);
+        setMessage("Menu item created.");
+      }
+      clearMenuForm();
+      refresh();
+    } catch (err) {
+      setMessage(err.message || "Unable to save menu item.");
     }
-    clearMenuForm();
-    refresh();
   };
 
   const deleteMenuItem = async (item) => {
